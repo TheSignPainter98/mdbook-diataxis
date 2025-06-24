@@ -241,17 +241,17 @@ impl Replacement {
                     <blockquote>
                         <p>
                             <div class="diataxis-card-header">
-                                <a href="./reference-materials/index.html">{reference_materials_title}</a>
+                                <a href="./explanations/index.html">{explanation_title}</a>
                             </div>
-                            {reference_materials_description}
+                            {explanation_description}
                         </p>
                     </blockquote>
                     <blockquote>
                         <p>
                             <div class="diataxis-card-header">
-                                <a href="./explanations/index.html">{explanation_title}</a>
+                                <a href="./reference-materials/index.html">{reference_materials_title}</a>
                             </div>
-                            {explanation_description}
+                            {reference_materials_description}
                         </p>
                     </blockquote>
                 </div>

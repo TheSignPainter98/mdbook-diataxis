@@ -25,17 +25,17 @@ expression: chapter.content
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="./reference-materials/index.html">Reference</a>
+                <a href="./explanations/index.html">Explanation</a>
             </div>
-            Technical information
+            Long-form discussion of key topics
         </p>
     </blockquote>
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="./explanations/index.html">Explanation</a>
+                <a href="./reference-materials/index.html">Reference</a>
             </div>
-            Long-form discussion of key topics
+            Technical information
         </p>
     </blockquote>
 </div>
