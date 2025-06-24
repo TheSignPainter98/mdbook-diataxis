@@ -278,6 +278,7 @@ mod tests {
         matchers::{all, contains_substring},
     };
     use indoc::indoc;
+    use insta::assert_toml_snapshot;
     use mdbook::preprocess::CmdPreprocessor;
 
     mod compass {
@@ -332,6 +333,7 @@ mod tests {
                     contains_substring("Explanation"),
                 )
             );
+            assert_toml_snapshot!(chapter.content);
         }
 
         #[googletest::test]
@@ -406,6 +408,7 @@ mod tests {
                     contains_substring("custom-explanations-description"),
                 )
             );
+            assert_toml_snapshot!(chapter.content);
         }
     }
 }

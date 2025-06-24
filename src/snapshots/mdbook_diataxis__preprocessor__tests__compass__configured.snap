@@ -1,0 +1,42 @@
+---
+source: src/preprocessor.rs
+expression: chapter.content
+---
+'''
+# Chapter 1
+
+&#8288;<div class="quote-grid">
+    <blockquote>
+        <p>
+            <div class="diataxis-card-header">
+                <a href="./tutorials/index.html">custom-explanation-title</a>
+            </div>
+            custom-explanation-description
+        </p>
+    </blockquote>
+    <blockquote>
+        <p>
+            <div class="diataxis-card-header">
+                <a href="./how-to/index.html">custom-how-to-guides-title</a>
+            </div>
+            custom-how-to-guides-description
+        </p>
+    </blockquote>
+    <blockquote>
+        <p>
+            <div class="diataxis-card-header">
+                <a href="./reference-materials/index.html">custom-reference-materials-title</a>
+            </div>
+            custom-reference-materials-description
+        </p>
+    </blockquote>
+    <blockquote>
+        <p>
+            <div class="diataxis-card-header">
+                <a href="./explanations/index.html">custom-explanations-title</a>
+            </div>
+            custom-explanations-description
+        </p>
+    </blockquote>
+</div>
+'''

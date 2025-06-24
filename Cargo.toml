@@ -16,3 +16,4 @@ toml = "0.5.11"
 
 [dev-dependencies]
 googletest = "0.14.1"
+insta = { version = "1.43.1", features = ["toml"] }
