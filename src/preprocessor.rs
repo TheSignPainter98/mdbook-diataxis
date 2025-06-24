@@ -57,7 +57,7 @@ impl DiataxisPreprocessor {
 
 impl Preprocessor for DiataxisPreprocessor {
     fn name(&self) -> &str {
-        "diataxis"
+        "mdbook-diataxis"
     }
 
     fn supports_renderer(&self, renderer: &str) -> bool {
@@ -65,9 +65,10 @@ impl Preprocessor for DiataxisPreprocessor {
     }
 
     fn run(&self, ctx: &PreprocessorContext, mut book: Book) -> Result<Book> {
+        const CONFIG_KEY: &str = "diataxis";
         let config = ctx
             .config
-            .get_preprocessor(self.name())
+            .get_preprocessor(CONFIG_KEY)
             .map(Config::new)
             .unwrap_or_default();
 

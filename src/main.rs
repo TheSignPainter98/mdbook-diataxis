@@ -58,7 +58,7 @@ fn check_version(preprocessor: &DiataxisPreprocessor, ctx: &PreprocessorContext)
     let version_req = VersionReq::parse(mdbook::MDBOOK_VERSION)?;
     if !version_req.matches(&book_version) {
         eprintln!(
-            "warning: the {} plugin was build against version {} of mdbook, but is being called from version {}",
+            "Warning: The {} plugin was build against version {} of mdbook, but is being called from version {}",
             preprocessor.name(),
             mdbook::MDBOOK_VERSION,
             ctx.mdbook_version,
