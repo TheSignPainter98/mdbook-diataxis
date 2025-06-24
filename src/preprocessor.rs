@@ -462,26 +462,7 @@ mod tests {
                             "title": "TITLE"
                         },
                         "preprocessor": {
-                            "diataxis": {
-                                "compass": {
-                                    "tutorials": {
-                                        "title": "custom-explanation-title",
-                                        "description": "custom-explanation-description"
-                                    },
-                                    "how-to-guides": {
-                                        "title": "custom-how-to-guides-title",
-                                        "description": "custom-how-to-guides-description"
-                                    },
-                                    "reference": {
-                                        "title": "custom-reference-materials-title",
-                                        "description": "custom-reference-materials-description"
-                                    },
-                                    "explanation": {
-                                        "title": "custom-explanations-title",
-                                        "description": "custom-explanations-description"
-                                    }
-                                }
-                            }
+                            "diataxis": {}
                         }
                     },
                     "renderer": "html",
