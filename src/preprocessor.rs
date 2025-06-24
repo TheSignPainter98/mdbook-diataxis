@@ -188,7 +188,7 @@ impl Replacement {
     const fn pattern(&self) -> &'static str {
         match self {
             Self::Compass => "{{#diataxis compass}}",
-            Self::Toc => "{{#diataxis toc}}",
+            Self::Toc => "{{#diataxis table-of-contents}}",
         }
     }
 
@@ -490,7 +490,7 @@ mod tests {
                     "sections": [{
                         "Chapter": {
                             "name": "Chapter 1",
-                            "content": "# Chapter 1\n{{#diataxis toc}}",
+                            "content": "# Chapter 1\n{{#diataxis table-of-contents}}",
                             "number": [1],
                             "sub_items": [{
                                 "Chapter": {
