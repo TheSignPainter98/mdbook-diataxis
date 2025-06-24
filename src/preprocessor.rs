@@ -259,10 +259,6 @@ impl Replacement {
     }
 
     fn write_toc_to(&self, buf: &mut String, ctx: &ReplacementCtx) {
-        eprintln!(
-            "{:?}, {:?}",
-            ctx.chapter.source_path, ctx.chapter.sub_items[0]
-        );
         let chapter_path = match &ctx.chapter.source_path {
             Some(path) => path,
             _ => return,
