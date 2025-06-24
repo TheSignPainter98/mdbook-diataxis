@@ -80,7 +80,7 @@ impl Preprocessor for DiataxisPreprocessor {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct Config<'cfg> {
     tutorials_title_override: Option<&'cfg str>,
     tutorials_description_override: Option<&'cfg str>,
