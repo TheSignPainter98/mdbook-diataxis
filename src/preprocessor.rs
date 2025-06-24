@@ -3,7 +3,7 @@ use std::sync::LazyLock;
 // TODO(kcza): error handling, e.g. on {{#diataxis unrecognised}}
 
 use aho_corasick::AhoCorasick;
-use indoc::indoc;
+use indoc::writedoc;
 use mdbook::book::{Book, Chapter};
 use mdbook::errors::Result;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
@@ -26,8 +26,6 @@ impl DiataxisPreprocessor {
     }
 
     fn preprocess_chapter(&self, chapter: &mut Chapter, config: &Config) -> Result<()> {
-        println!("looking at {chapter:?}");
-
         let parser = Parser::new(&chapter.content).map(|event| match event {
             Event::Text(text) => Event::Text(self.preprocess_text(&text, config, &*chapter).into()),
             _ => event,
@@ -44,11 +42,11 @@ impl DiataxisPreprocessor {
         static MATCHER: LazyLock<AhoCorasick> =
             LazyLock::new(|| AhoCorasick::new(Replacement::patterns()).unwrap());
 
-        let replacement_ctx = ReplacementCtx::new(config, chapter);
+        let replacement_ctx = ReplacementCtx { config, chapter };
         let mut ret = String::with_capacity(text.len());
         MATCHER.replace_all_with(text, &mut ret, |result, _, ret| {
-            let pattern = Replacement::from_index(result.pattern().as_usize());
-            pattern.write_to(ret, replacement_ctx);
+            let replacement = Replacement::from_index(result.pattern().as_usize());
+            replacement.write_to(ret, &replacement_ctx);
             true
         });
         ret
@@ -80,11 +78,97 @@ impl Preprocessor for DiataxisPreprocessor {
 }
 
 #[derive(Default)]
-struct Config;
+struct Config<'cfg> {
+    tutorials_title_override: Option<&'cfg str>,
+    tutorials_description_override: Option<&'cfg str>,
+    how_to_guide_title_override: Option<&'cfg str>,
+    how_to_guide_description_override: Option<&'cfg str>,
+    reference_materials_title_override: Option<&'cfg str>,
+    reference_materials_description_override: Option<&'cfg str>,
+    explanation_title_override: Option<&'cfg str>,
+    explanation_description_override: Option<&'cfg str>,
+}
 
-impl Config {
-    fn new(_raw: &Table) -> Self {
-        Self
+impl<'cfg> Config<'cfg> {
+    fn new(raw: &'cfg Table) -> Self {
+        let section_overrides = |section| {
+            // TODO(kcza): this is janky and doesn't produce good error messages.
+            // There's likely a nice automated way of doing this which ticks all boxes.
+            let compass_section_config_overrides = raw
+                .get("compass")
+                .and_then(|value| value.as_table())
+                .and_then(|compass_table| compass_table.get(section))
+                .and_then(|value| value.as_table())
+                .map(|section_table| {
+                    let title_override =
+                        section_table.get("title").and_then(|title| title.as_str());
+                    let description_override = section_table
+                        .get("description")
+                        .and_then(|desc| desc.as_str());
+                    (title_override, description_override)
+                });
+            match compass_section_config_overrides {
+                Some((title_override, description_override)) => {
+                    (title_override, description_override)
+                }
+                None => (None, None),
+            }
+        };
+        let (tutorials_title_override, tutorials_description_override) =
+            section_overrides("tutorials");
+        let (how_to_guide_title_override, how_to_guide_description_override) =
+            section_overrides("how-to-guides");
+        let (reference_materials_title_override, reference_materials_description_override) =
+            section_overrides("reference");
+        let (explanation_title_override, explanation_description_override) =
+            section_overrides("explanation");
+        Self {
+            tutorials_title_override,
+            tutorials_description_override,
+            how_to_guide_title_override,
+            how_to_guide_description_override,
+            reference_materials_title_override,
+            reference_materials_description_override,
+            explanation_title_override,
+            explanation_description_override,
+        }
+    }
+
+    fn tutorials_title(&self) -> &str {
+        self.tutorials_title_override.unwrap_or("Tutorials")
+    }
+
+    fn tutorials_description(&self) -> &str {
+        self.tutorials_description_override
+            .unwrap_or("Hands-on lessons")
+    }
+
+    fn how_to_guide_title(&self) -> &str {
+        self.how_to_guide_title_override.unwrap_or("How-to guides")
+    }
+
+    fn how_to_guide_description(&self) -> &str {
+        self.how_to_guide_description_override
+            .unwrap_or("Step-by-step instructions for common tasks")
+    }
+
+    fn reference_materials_title(&self) -> &str {
+        self.reference_materials_title_override
+            .unwrap_or("Reference")
+    }
+
+    fn reference_materials_description(&self) -> &str {
+        self.reference_materials_description_override
+            .unwrap_or("Technical information")
+    }
+
+    fn explanation_title(&self) -> &str {
+        self.explanation_title_override.unwrap_or("Explanation")
+    }
+
+    fn explanation_description(&self) -> &str {
+        self.explanation_description_override
+            .unwrap_or("Long-form discussion of key topics")
     }
 }
 
@@ -110,98 +194,218 @@ impl Replacement {
         [Self::Compass, Self::Toc][index]
     }
 
-    const COMPASS: &str = indoc! {r#"
-        <div class="quote-grid">
-            <blockquote>
-                    <p>
-                        <div class="diataxis-card-header"><a href="./tutorials/index.html">Tutorials</a></div>
-                        Hands-on lessons in operating freight
-                    </p>
-                </a>
-            </blockquote>
-            <blockquote>
-                <p>
-                    <div class="diataxis-card-header">
-                        <a href="./how-to/index.html">How-to guides</a>
-                    </div>
-                    Step-by-step instructions for common tasks
-                </p>
-            </blockquote>
-            <blockquote>
-                <p>
-                    <div class="diataxis-card-header">
-                        <a href="./reference-materials/index.html">Reference materials</a>
-                    </div>
-                    Technical information about freight
-                </p>
-            </blockquote>
-            <blockquote>
-                <p>
-                    <div class="diataxis-card-header">
-                        <a href="./explanations/index.html">Explanations</a>
-                    </div>
-                    Long-form discussion of key topics
-                </p>
-            </blockquote>
-        </div>
-    "#};
-
-    fn write_to(&self, buf: &mut String, config: &Config) {
+    fn write_to(&self, buf: &mut String, ctx: &ReplacementCtx) {
         match self {
-            Self::Compass => buf.push_str(Self::COMPASS),
-            Self::Toc => self.write_toc_to(buf, config),
+            Self::Compass => self.write_compass_to(buf, ctx),
+            Self::Toc => self.write_toc_to(buf, ctx),
         };
     }
 
-    fn write_toc_to(&self, buf: &mut String, _config: &Config) {
-        buf.push_str("TOC HERE");
+    fn write_compass_to(&self, buf: &mut String, ctx: &ReplacementCtx) {
+        use std::fmt::Write;
+
+        let tutorials_title = ctx.config.tutorials_title();
+        let tutorials_description = ctx.config.tutorials_description();
+        let how_to_guide_title = ctx.config.how_to_guide_title();
+        let how_to_guide_description = ctx.config.how_to_guide_description();
+        let reference_materials_title = ctx.config.reference_materials_title();
+        let reference_materials_description = ctx.config.reference_materials_description();
+        let explanation_title = ctx.config.explanation_title();
+        let explanation_description = ctx.config.explanation_description();
+        writedoc!(
+            buf,
+            // TODO(kcza): this &#8288; causes spacing issues but otherwise if tje
+            // snippet starts with a `<`, it gets escaped, ruining the outermost html
+            // tags.
+            r#"
+                &#8288;<div class="quote-grid">
+                    <blockquote>
+                        <p>
+                            <div class="diataxis-card-header">
+                                <a href="./tutorials/index.html">{tutorials_title}</a>
+                            </div>
+                            {tutorials_description}
+                        </p>
+                    </blockquote>
+                    <blockquote>
+                        <p>
+                            <div class="diataxis-card-header">
+                                <a href="./how-to/index.html">{how_to_guide_title}</a>
+                            </div>
+                            {how_to_guide_description}
+                        </p>
+                    </blockquote>
+                    <blockquote>
+                        <p>
+                            <div class="diataxis-card-header">
+                                <a href="./reference-materials/index.html">{reference_materials_title}</a>
+                            </div>
+                            {reference_materials_description}
+                        </p>
+                    </blockquote>
+                    <blockquote>
+                        <p>
+                            <div class="diataxis-card-header">
+                                <a href="./explanations/index.html">{explanation_title}</a>
+                            </div>
+                            {explanation_description}
+                        </p>
+                    </blockquote>
+                </div>
+            "#,
+        )
+        .unwrap();
     }
+
+    fn write_toc_to(&self, _buf: &mut String, _ctx: &ReplacementCtx) {
+        todo!();
+    }
+}
+
+struct ReplacementCtx<'ctx> {
+    #[allow(unused)]
+    config: &'ctx Config<'ctx>,
+    #[allow(unused)]
+    chapter: &'ctx Chapter,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // use googletest::expect_that;
+    use googletest::{
+        expect_that,
+        matchers::{all, contains_substring},
+    };
     use indoc::indoc;
     use mdbook::preprocess::CmdPreprocessor;
 
-    #[test]
-    fn support() {
-        let input_json = indoc! {br##"
-            [{
-                "root": "/path/to/book",
-                "config": {
-                    "book": {
-                        "authors": ["AUTHOR"],
-                        "language": "en",
-                        "multilingual": false,
-                        "src": "src",
-                        "title": "TITLE"
+    mod compass {
+        use super::*;
+
+        #[googletest::test]
+        fn default() {
+            let input_json = indoc! {br##"
+                [{
+                    "root": "/path/to/book",
+                    "config": {
+                        "book": {
+                            "authors": ["AUTHOR"],
+                            "language": "en",
+                            "multilingual": false,
+                            "src": "src",
+                            "title": "TITLE"
+                        },
+                        "preprocessor": {
+                            "diataxis": {}
+                        }
                     },
-                    "preprocessor": {
-                        "diataxis": {}
-                    }
-                },
-                "renderer": "html",
-                "mdbook_version": "0.4.21"
-            }, {
-                "sections": [{
-                    "Chapter": {
-                        "name": "Chapter 1",
-                        "content": "# Chapter 1\nasdf {{#diataxis toc}} fdsa",
-                        "number": [1],
-                        "sub_items": [],
-                        "path": "chapter_1.md",
-                        "source_path": "chapter_1.md",
-                        "parent_names": []
-                    }
-                }],
-                "__non_exhaustive": null
-            }]
-        "##};
-        let (ctx, book) = CmdPreprocessor::parse_input(&input_json[..]).unwrap();
-        let book = DiataxisPreprocessor::new().run(&ctx, book).unwrap();
-        panic!("{book:?}");
+                    "renderer": "html",
+                    "mdbook_version": "0.4.21"
+                }, {
+                    "sections": [{
+                        "Chapter": {
+                            "name": "Chapter 1",
+                            "content": "# Chapter 1\n{{#diataxis compass}}",
+                            "number": [1],
+                            "sub_items": [],
+                            "path": "chapter_1.md",
+                            "source_path": "chapter_1.md",
+                            "parent_names": []
+                        }
+                    }],
+                    "__non_exhaustive": null
+                }]
+            "##};
+            let (ctx, book) = CmdPreprocessor::parse_input(&input_json[..]).unwrap();
+            let book = DiataxisPreprocessor::new().run(&ctx, book).unwrap();
+            let chapter = match &book.sections[0] {
+                BookItem::Chapter(chapter) => chapter,
+                _ => panic!("unexpected first item"),
+            };
+            expect_that!(
+                chapter.content,
+                all!(
+                    contains_substring("Tutorials"),
+                    contains_substring("How-to guides"),
+                    contains_substring("Reference"),
+                    contains_substring("Explanation"),
+                )
+            );
+        }
+
+        #[googletest::test]
+        fn configured() {
+            let input_json = indoc! {br##"
+                [{
+                    "root": "/path/to/book",
+                    "config": {
+                        "book": {
+                            "authors": ["AUTHOR"],
+                            "language": "en",
+                            "multilingual": false,
+                            "src": "src",
+                            "title": "TITLE"
+                        },
+                        "preprocessor": {
+                            "diataxis": {
+                                "compass": {
+                                    "tutorials": {
+                                        "title": "custom-explanation-title",
+                                        "description": "custom-explanation-description"
+                                    },
+                                    "how-to-guides": {
+                                        "title": "custom-how-to-guides-title",
+                                        "description": "custom-how-to-guides-description"
+                                    },
+                                    "reference": {
+                                        "title": "custom-reference-materials-title",
+                                        "description": "custom-reference-materials-description"
+                                    },
+                                    "explanation": {
+                                        "title": "custom-explanations-title",
+                                        "description": "custom-explanations-description"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "renderer": "html",
+                    "mdbook_version": "0.4.21"
+                }, {
+                    "sections": [{
+                        "Chapter": {
+                            "name": "Chapter 1",
+                            "content": "# Chapter 1\n{{#diataxis compass}}",
+                            "number": [1],
+                            "sub_items": [],
+                            "path": "chapter_1.md",
+                            "source_path": "chapter_1.md",
+                            "parent_names": []
+                        }
+                    }],
+                    "__non_exhaustive": null
+                }]
+            "##};
+            let (ctx, book) = CmdPreprocessor::parse_input(&input_json[..]).unwrap();
+            let book = DiataxisPreprocessor::new().run(&ctx, book).unwrap();
+            let chapter = match &book.sections[0] {
+                BookItem::Chapter(chapter) => chapter,
+                _ => panic!("unexpected first item"),
+            };
+            expect_that!(
+                chapter.content,
+                all!(
+                    contains_substring("custom-explanation-title"),
+                    contains_substring("custom-explanation-description"),
+                    contains_substring("custom-how-to-guides-title"),
+                    contains_substring("custom-how-to-guides-description"),
+                    contains_substring("custom-reference-materials-title"),
+                    contains_substring("custom-reference-materials-description"),
+                    contains_substring("custom-explanations-title"),
+                    contains_substring("custom-explanations-description"),
+                )
+            );
+        }
     }
 }
