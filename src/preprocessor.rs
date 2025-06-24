@@ -276,10 +276,13 @@ impl Replacement {
                 let link_path = child
                     .source_path
                     .as_deref()
-                    .map(|path| relative_to(&chapter_path, path))
-                    .unwrap_or(PathBuf::new());
-                writeln!(buf, "- [{name}]({})", link_path.display())
-                    .expect("internal error: cannot to write to string")
+                    .map(|path| relative_to(&chapter_path, path));
+                if let Some(link_path) = link_path {
+                    writeln!(buf, "- [{name}]({})", link_path.display())
+                        .expect("internal error: cannot to write to string")
+                } else {
+                    writeln!(buf, "- {name}").expect("internal error: cannot to write to string")
+                }
             });
     }
 }
@@ -304,8 +307,8 @@ struct ReplacementCtx<'ctx> {
 mod tests {
     use super::*;
 
+    use googletest::expect_that;
     use googletest::matchers::{all, contains_substring};
-    use googletest::{assert_that, expect_that};
     use indoc::indoc;
     use insta::assert_toml_snapshot;
     use mdbook::preprocess::CmdPreprocessor;
@@ -522,11 +525,11 @@ mod tests {
                 BookItem::Chapter(chapter) => chapter,
                 _ => panic!("unexpected first item"),
             };
-            assert_that!(
+            expect_that!(
                 chapter.content,
                 all!(
                     contains_substring("- [Non-draft sub-chapter](dir/non_draft_sub.md)"),
-                    contains_substring("- [Draft sub-chapter]()"),
+                    contains_substring("- Draft sub-chapter"),
                 )
             );
             assert_toml_snapshot!(chapter.content);

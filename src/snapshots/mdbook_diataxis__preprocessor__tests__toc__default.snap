@@ -6,5 +6,5 @@ expression: chapter.content
 # Chapter 1
 
 - [Non-draft sub-chapter](dir/non_draft_sub.md)
-- [Draft sub-chapter]()
+- Draft sub-chapter
 '''
