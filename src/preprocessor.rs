@@ -1,3 +1,5 @@
+use std::iter;
+use std::path::{Component, Path, PathBuf};
 use std::sync::LazyLock;
 
 // TODO(kcza): error handling, e.g. on {{#diataxis unrecognised}}
@@ -253,13 +255,46 @@ impl Replacement {
                     </blockquote>
                 </div>
             "#,
-        )
-        .unwrap();
+        ).expect("internal error: cannot to write to string");
     }
 
-    fn write_toc_to(&self, _buf: &mut String, _ctx: &ReplacementCtx) {
-        todo!();
+    fn write_toc_to(&self, buf: &mut String, ctx: &ReplacementCtx) {
+        eprintln!(
+            "{:?}, {:?}",
+            ctx.chapter.source_path, ctx.chapter.sub_items[0]
+        );
+        let chapter_path = match &ctx.chapter.source_path {
+            Some(path) => path,
+            _ => return,
+        };
+        ctx.chapter
+            .sub_items
+            .iter()
+            .filter_map(|item| match item {
+                BookItem::Chapter(chapter) => Some(chapter),
+                _ => None,
+            })
+            .for_each(|child| {
+                use std::fmt::Write;
+                let name = &child.name;
+                let link_path = child
+                    .source_path
+                    .as_deref()
+                    .map(|path| relative_to(&chapter_path, path))
+                    .unwrap_or(PathBuf::new());
+                writeln!(buf, "- [{name}]({})", link_path.display())
+                    .expect("internal error: cannot to write to string")
+            });
     }
+}
+
+fn relative_to(source: &Path, target: &Path) -> PathBuf {
+    target
+        .components()
+        .zip(source.components().chain(iter::repeat(Component::RootDir)))
+        .skip_while(|(target_component, source_component)| target_component == source_component)
+        .map(|(target_component, _)| target_component)
+        .collect::<PathBuf>()
 }
 
 struct ReplacementCtx<'ctx> {
@@ -273,10 +308,8 @@ struct ReplacementCtx<'ctx> {
 mod tests {
     use super::*;
 
-    use googletest::{
-        expect_that,
-        matchers::{all, contains_substring},
-    };
+    use googletest::matchers::{all, contains_substring};
+    use googletest::{assert_that, expect_that};
     use indoc::indoc;
     use insta::assert_toml_snapshot;
     use mdbook::preprocess::CmdPreprocessor;
@@ -406,6 +439,98 @@ mod tests {
                     contains_substring("custom-reference-materials-description"),
                     contains_substring("custom-explanations-title"),
                     contains_substring("custom-explanations-description"),
+                )
+            );
+            assert_toml_snapshot!(chapter.content);
+        }
+    }
+
+    mod toc {
+        use super::*;
+
+        #[googletest::test]
+        fn default() {
+            let input_json = indoc! {br##"
+                [{
+                    "root": "/path/to/book",
+                    "config": {
+                        "book": {
+                            "authors": ["AUTHOR"],
+                            "language": "en",
+                            "multilingual": false,
+                            "src": "src",
+                            "title": "TITLE"
+                        },
+                        "preprocessor": {
+                            "diataxis": {
+                                "compass": {
+                                    "tutorials": {
+                                        "title": "custom-explanation-title",
+                                        "description": "custom-explanation-description"
+                                    },
+                                    "how-to-guides": {
+                                        "title": "custom-how-to-guides-title",
+                                        "description": "custom-how-to-guides-description"
+                                    },
+                                    "reference": {
+                                        "title": "custom-reference-materials-title",
+                                        "description": "custom-reference-materials-description"
+                                    },
+                                    "explanation": {
+                                        "title": "custom-explanations-title",
+                                        "description": "custom-explanations-description"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "renderer": "html",
+                    "mdbook_version": "0.4.21"
+                }, {
+                    "sections": [{
+                        "Chapter": {
+                            "name": "Chapter 1",
+                            "content": "# Chapter 1\n{{#diataxis toc}}",
+                            "number": [1],
+                            "sub_items": [{
+                                "Chapter": {
+                                    "name": "Non-draft sub-chapter",
+                                    "content": "non-draft sub content",
+                                    "number": [1, 1],
+                                    "sub_items": [],
+                                    "path": "chapter_1/dir/non_draft_sub.md",
+                                    "source_path": "chapter_1/dir/non_draft_sub.md",
+                                    "parent_names": []
+                                }
+                            }, {
+                                "Chapter": {
+                                    "name": "Draft sub-chapter",
+                                    "content": "draft sub content",
+                                    "number": [1, 1],
+                                    "sub_items": [],
+                                    "path": "chapter_1/dir/draft_sub.md",
+                                    "parent_names": []
+                                }
+                            }],
+                            "path": "chapter_1/README.md",
+                            "source_path": "chapter_1/README.md",
+                            "parent_names": []
+                        }
+                    }],
+                    "__non_exhaustive": null
+                }]
+            "##};
+            let (ctx, book) = CmdPreprocessor::parse_input(&input_json[..]).unwrap();
+            let book = DiataxisPreprocessor::new().run(&ctx, book).unwrap();
+            let chapter = match &book.sections[0] {
+                BookItem::Chapter(chapter) => chapter,
+                _ => panic!("unexpected first item"),
+            };
+            assert_that!(
+                chapter.content,
+                all!(
+                    contains_substring("- [Non-draft sub-chapter](dir/non_draft_sub.md)"),
+                    contains_substring("- [Draft sub-chapter]()"),
                 )
             );
             assert_toml_snapshot!(chapter.content);
