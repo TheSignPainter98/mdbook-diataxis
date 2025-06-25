@@ -12,6 +12,7 @@ use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 use mdbook::BookItem;
 use pulldown_cmark::{Event, Parser};
 use toml::value::Table;
+use toml::Value;
 
 pub(crate) struct DiataxisPreprocessor;
 
@@ -82,14 +83,10 @@ impl Preprocessor for DiataxisPreprocessor {
 
 #[derive(Debug, Default)]
 struct Config<'cfg> {
-    tutorials_title_override: Option<&'cfg str>,
-    tutorials_description_override: Option<&'cfg str>,
-    how_to_guide_title_override: Option<&'cfg str>,
-    how_to_guide_description_override: Option<&'cfg str>,
-    reference_materials_title_override: Option<&'cfg str>,
-    reference_materials_description_override: Option<&'cfg str>,
-    explanation_title_override: Option<&'cfg str>,
-    explanation_description_override: Option<&'cfg str>,
+    tutorials: SectionConfig<'cfg>,
+    how_to_guides: SectionConfig<'cfg>,
+    reference: SectionConfig<'cfg>,
+    explanation: SectionConfig<'cfg>,
 }
 
 impl<'cfg> Config<'cfg> {
@@ -97,81 +94,109 @@ impl<'cfg> Config<'cfg> {
         let section_overrides = |section| {
             // TODO(kcza): this is janky and doesn't produce good error messages.
             // There's likely a nice automated way of doing this which ticks all boxes.
-            let compass_section_config_overrides = raw
-                .get("compass")
-                .and_then(|value| value.as_table())
+            raw.get("compass")
+                .and_then(Value::as_table)
                 .and_then(|compass_table| compass_table.get(section))
-                .and_then(|value| value.as_table())
-                .map(|section_table| {
-                    let title_override =
-                        section_table.get("title").and_then(|title| title.as_str());
-                    let description_override = section_table
-                        .get("description")
-                        .and_then(|desc| desc.as_str());
-                    (title_override, description_override)
-                });
-            match compass_section_config_overrides {
-                Some((title_override, description_override)) => {
-                    (title_override, description_override)
-                }
-                None => (None, None),
-            }
+                .and_then(Value::as_table)
+                .map(SectionConfig::new)
+                .unwrap_or_default()
         };
-        let (tutorials_title_override, tutorials_description_override) =
-            section_overrides("tutorials");
-        let (how_to_guide_title_override, how_to_guide_description_override) =
-            section_overrides("how-to-guides");
-        let (reference_materials_title_override, reference_materials_description_override) =
-            section_overrides("reference");
-        let (explanation_title_override, explanation_description_override) =
-            section_overrides("explanation");
+        let tutorials = section_overrides("tutorials");
+        let how_to_guides = section_overrides("how-to-guides");
+        let explanation = section_overrides("explanation");
+        let reference = section_overrides("reference");
         Self {
-            tutorials_title_override,
-            tutorials_description_override,
-            how_to_guide_title_override,
-            how_to_guide_description_override,
-            reference_materials_title_override,
-            reference_materials_description_override,
-            explanation_title_override,
-            explanation_description_override,
+            tutorials,
+            how_to_guides,
+            explanation,
+            reference,
         }
     }
 
     fn tutorials_title(&self) -> &str {
-        self.tutorials_title_override.unwrap_or("Tutorials")
+        self.tutorials.title_override.unwrap_or("Tutorials")
     }
 
     fn tutorials_description(&self) -> &str {
-        self.tutorials_description_override
+        self.tutorials
+            .description_override
             .unwrap_or("Hands-on lessons")
     }
 
-    fn how_to_guide_title(&self) -> &str {
-        self.how_to_guide_title_override.unwrap_or("How-to guides")
+    fn tutorials_link(&self) -> &str {
+        self.tutorials
+            .link_override
+            .unwrap_or("./tutorials/index.html")
     }
 
-    fn how_to_guide_description(&self) -> &str {
-        self.how_to_guide_description_override
+    fn how_to_guides_title(&self) -> &str {
+        self.how_to_guides.title_override.unwrap_or("How-to guides")
+    }
+
+    fn how_to_guides_description(&self) -> &str {
+        self.how_to_guides
+            .description_override
             .unwrap_or("Step-by-step instructions for common tasks")
     }
 
-    fn reference_materials_title(&self) -> &str {
-        self.reference_materials_title_override
-            .unwrap_or("Reference")
-    }
-
-    fn reference_materials_description(&self) -> &str {
-        self.reference_materials_description_override
-            .unwrap_or("Technical information")
+    fn how_to_guides_link(&self) -> &str {
+        self.how_to_guides
+            .link_override
+            .unwrap_or("./how-to/index.html")
     }
 
     fn explanation_title(&self) -> &str {
-        self.explanation_title_override.unwrap_or("Explanation")
+        self.explanation.title_override.unwrap_or("Explanation")
     }
 
     fn explanation_description(&self) -> &str {
-        self.explanation_description_override
+        self.explanation
+            .description_override
             .unwrap_or("Long-form discussion of key topics")
+    }
+
+    fn explanation_link(&self) -> &str {
+        self.explanation
+            .link_override
+            .unwrap_or("./explanations/index.html")
+    }
+
+    fn reference_title(&self) -> &str {
+        self.reference.title_override.unwrap_or("Reference")
+    }
+
+    fn reference_description(&self) -> &str {
+        self.reference
+            .description_override
+            .unwrap_or("Technical information")
+    }
+
+    fn reference_link(&self) -> &str {
+        self.reference
+            .link_override
+            .unwrap_or("./reference-materials/index.html")
+    }
+}
+
+#[derive(Debug, Default)]
+struct SectionConfig<'cfg> {
+    title_override: Option<&'cfg str>,
+    description_override: Option<&'cfg str>,
+    link_override: Option<&'cfg str>,
+}
+
+impl<'cfg> SectionConfig<'cfg> {
+    fn new(config_table: &'cfg Table) -> Self {
+        let title_override = config_table.get("title").and_then(|title| title.as_str());
+        let description_override = config_table
+            .get("description")
+            .and_then(|desc| desc.as_str());
+        let link_override = config_table.get("link").and_then(|file| file.as_str());
+        Self {
+            title_override,
+            description_override,
+            link_override,
+        }
     }
 }
 
@@ -209,12 +234,16 @@ impl Replacement {
 
         let tutorials_title = ctx.config.tutorials_title();
         let tutorials_description = ctx.config.tutorials_description();
-        let how_to_guide_title = ctx.config.how_to_guide_title();
-        let how_to_guide_description = ctx.config.how_to_guide_description();
-        let reference_materials_title = ctx.config.reference_materials_title();
-        let reference_materials_description = ctx.config.reference_materials_description();
+        let tutorials_link = ctx.config.tutorials_link();
+        let how_to_guide_title = ctx.config.how_to_guides_title();
+        let how_to_guide_description = ctx.config.how_to_guides_description();
+        let how_to_guides_link = ctx.config.how_to_guides_link();
+        let reference_title = ctx.config.reference_title();
+        let reference_description = ctx.config.reference_description();
+        let reference_link = ctx.config.reference_link();
         let explanation_title = ctx.config.explanation_title();
         let explanation_description = ctx.config.explanation_description();
+        let explanation_link = ctx.config.explanation_link();
         writedoc!(
             buf,
             // TODO(kcza): this &#8288; causes spacing issues but otherwise if tje
@@ -225,7 +254,7 @@ impl Replacement {
                     <blockquote>
                         <p>
                             <div class="diataxis-card-header">
-                                <a href="./tutorials/index.html">{tutorials_title}</a>
+                                <a href="{tutorials_link}">{tutorials_title}</a>
                             </div>
                             {tutorials_description}
                         </p>
@@ -233,7 +262,7 @@ impl Replacement {
                     <blockquote>
                         <p>
                             <div class="diataxis-card-header">
-                                <a href="./how-to/index.html">{how_to_guide_title}</a>
+                                <a href="{how_to_guides_link}">{how_to_guide_title}</a>
                             </div>
                             {how_to_guide_description}
                         </p>
@@ -241,7 +270,7 @@ impl Replacement {
                     <blockquote>
                         <p>
                             <div class="diataxis-card-header">
-                                <a href="./explanations/index.html">{explanation_title}</a>
+                                <a href="{explanation_link}">{explanation_title}</a>
                             </div>
                             {explanation_description}
                         </p>
@@ -249,14 +278,15 @@ impl Replacement {
                     <blockquote>
                         <p>
                             <div class="diataxis-card-header">
-                                <a href="./reference-materials/index.html">{reference_materials_title}</a>
+                                <a href="{reference_link}">{reference_title}</a>
                             </div>
-                            {reference_materials_description}
+                            {reference_description}
                         </p>
                     </blockquote>
                 </div>
             "#,
-        ).expect("internal error: cannot to write to string");
+        )
+        .expect("internal error: cannot to write to string");
     }
 
     fn write_toc_to(&self, buf: &mut String, ctx: &ReplacementCtx) {
@@ -386,20 +416,24 @@ mod tests {
                             "diataxis": {
                                 "compass": {
                                     "tutorials": {
-                                        "title": "custom-explanation-title",
-                                        "description": "custom-explanation-description"
+                                        "title": "custom-tutorials-title",
+                                        "description": "custom-tutorials-description",
+                                        "link": "custom-tutorials-link.html"
                                     },
                                     "how-to-guides": {
                                         "title": "custom-how-to-guides-title",
-                                        "description": "custom-how-to-guides-description"
+                                        "description": "custom-how-to-guides-description",
+                                        "link": "custom-how-to-guides-link.html"
                                     },
                                     "reference": {
-                                        "title": "custom-reference-materials-title",
-                                        "description": "custom-reference-materials-description"
+                                        "title": "custom-reference-title",
+                                        "description": "custom-reference-description",
+                                        "link": "custom-reference-link.html"
                                     },
                                     "explanation": {
-                                        "title": "custom-explanations-title",
-                                        "description": "custom-explanations-description"
+                                        "title": "custom-explanation-title",
+                                        "description": "custom-explanation-description",
+                                        "link": "custom-explanation-link.html"
                                     }
                                 }
                             }
@@ -431,14 +465,18 @@ mod tests {
             expect_that!(
                 chapter.content,
                 all!(
-                    contains_substring("custom-explanation-title"),
-                    contains_substring("custom-explanation-description"),
+                    contains_substring("custom-tutorials-title"),
+                    contains_substring("custom-tutorials-description"),
+                    contains_substring(r#"href="custom-tutorials-link.html""#),
                     contains_substring("custom-how-to-guides-title"),
                     contains_substring("custom-how-to-guides-description"),
-                    contains_substring("custom-reference-materials-title"),
-                    contains_substring("custom-reference-materials-description"),
-                    contains_substring("custom-explanations-title"),
-                    contains_substring("custom-explanations-description"),
+                    contains_substring(r#"href="custom-how-to-guides-link.html""#),
+                    contains_substring("custom-reference-title"),
+                    contains_substring("custom-reference-description"),
+                    contains_substring(r#"href="custom-reference-link.html""#),
+                    contains_substring("custom-explanation-title"),
+                    contains_substring("custom-explanation-description"),
+                    contains_substring(r#"href="custom-explanation-link.html""#),
                 )
             );
             assert_toml_snapshot!(chapter.content);

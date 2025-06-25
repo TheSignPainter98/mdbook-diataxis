@@ -9,15 +9,15 @@ expression: chapter.content
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="./tutorials/index.html">custom-explanation-title</a>
+                <a href="custom-tutorials-link.html">custom-tutorials-title</a>
             </div>
-            custom-explanation-description
+            custom-tutorials-description
         </p>
     </blockquote>
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="./how-to/index.html">custom-how-to-guides-title</a>
+                <a href="custom-how-to-guides-link.html">custom-how-to-guides-title</a>
             </div>
             custom-how-to-guides-description
         </p>
@@ -25,17 +25,17 @@ expression: chapter.content
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="./explanations/index.html">custom-explanations-title</a>
+                <a href="custom-explanation-link.html">custom-explanation-title</a>
             </div>
-            custom-explanations-description
+            custom-explanation-description
         </p>
     </blockquote>
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="./reference-materials/index.html">custom-reference-materials-title</a>
+                <a href="custom-reference-link.html">custom-reference-title</a>
             </div>
-            custom-reference-materials-description
+            custom-reference-description
         </p>
     </blockquote>
 </div>
