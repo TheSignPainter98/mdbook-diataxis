@@ -1,12 +1,8 @@
 use std::path::PathBuf;
 
-use clap::{
-    builder::{
-        styling::{AnsiColor, Effects},
-        Styles,
-    },
-    ArgAction, Parser, Subcommand,
-};
+use clap::builder::Styles;
+use clap::builder::styling::{AnsiColor, Effects};
+use clap::{ArgAction, Parser, Subcommand};
 
 #[derive(Debug, Parser)]
 #[command(

@@ -3,15 +3,16 @@ use std::path::{Component, Path, PathBuf};
 use std::sync::LazyLock;
 
 use aho_corasick::{AhoCorasick, MatchKind};
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use indoc::writedoc;
+use mdbook::BookItem;
 use mdbook::book::{Book, Chapter};
 use mdbook::errors::Result as MdbookResult;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
-use mdbook::BookItem;
 use pulldown_cmark::{Event, Parser};
 use toml::value::Table;
 
+#[derive(Default)]
 pub struct DiataxisPreprocessor;
 
 impl DiataxisPreprocessor {
@@ -380,7 +381,7 @@ impl Replacement {
                 let link_path = child
                     .source_path
                     .as_deref()
-                    .map(|path| relative_to(&chapter_path, path));
+                    .map(|path| relative_to(chapter_path, path));
                 if let Some(link_path) = link_path {
                     writeln!(buf, "- [{name}]({})", link_path.display())
                         .expect("internal error: cannot to write to string")
