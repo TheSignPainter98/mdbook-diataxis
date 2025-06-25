@@ -1,34 +1,43 @@
 mod args;
+mod install;
 mod preprocessor;
 
-use std::{
-    io::{self, Read},
-    process::ExitCode,
-};
+use std::io::{self, Read};
+use std::process::ExitCode;
 
 use clap::Parser;
-use mdbook::{
-    errors::Result,
-    preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext},
-};
+use mdbook::errors::Result;
+use mdbook::preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext};
 use preprocessor::DiataxisPreprocessor;
 use semver::{Version, VersionReq};
 
-use self::args::{Args, Command, SupportsCmd};
+use crate::args::{Args, Command, InstallCmd, SupportsCmd};
 
 fn main() -> ExitCode {
     let args = Args::parse();
     match args.command {
-        Some(Command::Supports(SupportsCmd { renderer })) => check_support(&renderer),
+        Some(Command::Supports(cmd)) => run_supports_command(cmd),
+        Some(Command::Install(cmd)) => run_install_command(cmd),
         None => preprocess(io::stdin()),
     }
 }
 
-fn check_support(renderer: &str) -> ExitCode {
-    if DiataxisPreprocessor::new().supports_renderer(renderer) {
+fn run_supports_command(cmd: SupportsCmd) -> ExitCode {
+    let SupportsCmd { renderer } = cmd;
+    if DiataxisPreprocessor::new().supports_renderer(&renderer) {
         ExitCode::SUCCESS
     } else {
         ExitCode::FAILURE
+    }
+}
+
+fn run_install_command(cmd: InstallCmd) -> ExitCode {
+    match install::install(cmd) {
+        Ok(_) => ExitCode::SUCCESS,
+        Err(err) => {
+            eprintln!("{err:?}");
+            ExitCode::FAILURE
+        }
     }
 }
 
