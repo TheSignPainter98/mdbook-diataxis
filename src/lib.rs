@@ -3,14 +3,14 @@ use std::path::{Component, Path, PathBuf};
 use std::sync::LazyLock;
 
 use aho_corasick::{AhoCorasick, MatchKind};
+use anyhow::{anyhow, Context, Result};
 use indoc::writedoc;
 use mdbook::book::{Book, Chapter};
-use mdbook::errors::Result;
+use mdbook::errors::Result as MdbookResult;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 use mdbook::BookItem;
 use pulldown_cmark::{Event, Parser};
 use toml::value::Table;
-use toml::Value;
 
 pub struct DiataxisPreprocessor;
 
@@ -77,12 +77,13 @@ impl Preprocessor for DiataxisPreprocessor {
         renderer == "html"
     }
 
-    fn run(&self, ctx: &PreprocessorContext, mut book: Book) -> Result<Book> {
+    fn run(&self, ctx: &PreprocessorContext, mut book: Book) -> MdbookResult<Book> {
         const CONFIG_KEY: &str = "diataxis";
         let config = ctx
             .config
             .get_preprocessor(CONFIG_KEY)
             .map(Config::new)
+            .transpose()?
             .unwrap_or_default();
 
         for section in &mut book.sections {
@@ -102,27 +103,41 @@ struct Config<'cfg> {
 }
 
 impl<'cfg> Config<'cfg> {
-    fn new(raw: &'cfg Table) -> Self {
-        let section_overrides = |section| {
-            // TODO(kcza): this is janky and doesn't produce good error messages.
-            // There's likely a nice automated way of doing this which ticks all boxes.
-            raw.get("compass")
-                .and_then(Value::as_table)
+    fn new(raw: &'cfg Table) -> Result<Self> {
+        let section_overrides = |section| -> Result<SectionConfig<'_>> {
+            let overrides = raw
+                .get("compass")
+                .map(|compass_value| {
+                    compass_value
+                        .as_table()
+                        .ok_or_else(|| anyhow!("`compass` field must be a table"))
+                })
+                .transpose()?
                 .and_then(|compass_table| compass_table.get(section))
-                .and_then(Value::as_table)
-                .map(SectionConfig::new)
-                .unwrap_or_default()
+                .map(|section_value| {
+                    section_value
+                        .as_table()
+                        .ok_or_else(|| anyhow!("`compass.{section}` field must be a table"))
+                })
+                .transpose()?
+                .map(|section_table| {
+                    SectionConfig::new(section_table)
+                        .with_context(|| anyhow!("cannot parse `compass.{section}` table"))
+                })
+                .transpose()?
+                .unwrap_or_default();
+            Ok(overrides)
         };
-        let tutorials = section_overrides("tutorials");
-        let how_to_guides = section_overrides("how-to-guides");
-        let explanation = section_overrides("explanation");
-        let reference = section_overrides("reference");
-        Self {
+        let tutorials = section_overrides("tutorials")?;
+        let how_to_guides = section_overrides("how-to-guides")?;
+        let explanation = section_overrides("explanation")?;
+        let reference = section_overrides("reference")?;
+        Ok(Self {
             tutorials,
             how_to_guides,
             explanation,
             reference,
-        }
+        })
     }
 
     fn tutorials_title(&self) -> &str {
@@ -202,14 +217,29 @@ struct SectionConfig<'cfg> {
 }
 
 impl<'cfg> SectionConfig<'cfg> {
-    fn new(config_table: &'cfg Table) -> Self {
-        let title_override = config_table.get("title").and_then(|title| title.as_str());
+    fn new(config_table: &'cfg Table) -> Result<Self> {
+        let title_override = config_table
+            .get("title")
+            .map(|title| {
+                title
+                    .as_str()
+                    .ok_or_else(|| anyhow!("`title` field must be a string"))
+            })
+            .transpose()?;
         let description_override = config_table
             .get("description")
-            .and_then(|desc| desc.as_str());
+            .map(|desc| {
+                desc.as_str()
+                    .ok_or_else(|| anyhow!("`description` field must be a string"))
+            })
+            .transpose()?;
         let link_override = config_table
             .get("link")
-            .and_then(|file| file.as_str())
+            .map(|file| {
+                file.as_str()
+                    .ok_or_else(|| anyhow!("`link` field must be a string"))
+            })
+            .transpose()?
             .map(Path::new)
             .map(|path| {
                 if path
@@ -224,11 +254,11 @@ impl<'cfg> SectionConfig<'cfg> {
                 path.set_extension("html");
                 path
             });
-        Self {
+        Ok(Self {
             title_override,
             description_override,
             link_override,
-        }
+        })
     }
 }
 
