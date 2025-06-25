@@ -1,5 +1,5 @@
 ---
-source: src/preprocessor.rs
+source: src/lib.rs
 expression: chapter.content
 ---
 # Chapter 1
@@ -8,33 +8,33 @@ expression: chapter.content
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="custom-tutorials/index.html">custom-tutorials-title</a>
+                <a href="./tutorials/index.html">Tutorials</a>
             </div>
-            custom-tutorials-description
+            Hands-on lessons
         </p>
     </blockquote>
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="custom-how-to-guides-link.html">custom-how-to-guides-title</a>
+                <a href="./how-to/index.html">How-to guides</a>
             </div>
-            custom-how-to-guides-description
+            Step-by-step instructions for common tasks
         </p>
     </blockquote>
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="custom-explanation-link.html">custom-explanation-title</a>
+                <a href="./explanations/index.html">Explanation</a>
             </div>
-            custom-explanation-description
+            Long-form discussion of key topics
         </p>
     </blockquote>
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="custom-reference-link.html">custom-reference-title</a>
+                <a href="./reference-materials/index.html">Reference</a>
             </div>
-            custom-reference-description
+            Technical information
         </p>
     </blockquote>
 </div>

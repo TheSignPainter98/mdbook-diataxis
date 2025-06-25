@@ -1,6 +1,5 @@
 mod args;
 mod install;
-mod preprocessor;
 
 use std::io::{self, Read};
 use std::process::ExitCode;
@@ -8,7 +7,7 @@ use std::process::ExitCode;
 use clap::Parser;
 use mdbook::errors::Result;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor, PreprocessorContext};
-use preprocessor::DiataxisPreprocessor;
+use mdbook_diataxis::DiataxisPreprocessor;
 use semver::{Version, VersionReq};
 
 use crate::args::{Args, Command, InstallCmd, SupportsCmd};

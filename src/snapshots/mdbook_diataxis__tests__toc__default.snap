@@ -1,5 +1,5 @@
 ---
-source: src/preprocessor.rs
+source: src/lib.rs
 expression: chapter.content
 ---
 # Chapter 1

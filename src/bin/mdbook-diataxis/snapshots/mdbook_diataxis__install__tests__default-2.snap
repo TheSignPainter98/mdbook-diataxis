@@ -1,8 +1,7 @@
 ---
-source: src/install.rs
+source: src/bin/mdbook-diataxis/install.rs
 expression: diataxis_css_content
 ---
-'''
 .diataxis-card-header {
     font-weight: bold;
     margin-top: 0ex;
@@ -19,4 +18,3 @@ expression: diataxis_css_content
 .quote-grid > blockquote {
     margin: 0;
 }
-'''

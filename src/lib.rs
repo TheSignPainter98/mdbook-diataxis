@@ -14,10 +14,10 @@ use pulldown_cmark::{Event, Parser};
 use toml::value::Table;
 use toml::Value;
 
-pub(crate) struct DiataxisPreprocessor;
+pub struct DiataxisPreprocessor;
 
 impl DiataxisPreprocessor {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self
     }
 
