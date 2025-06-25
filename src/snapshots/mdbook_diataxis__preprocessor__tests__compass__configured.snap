@@ -2,7 +2,6 @@
 source: src/preprocessor.rs
 expression: chapter.content
 ---
-'''
 # Chapter 1
 
 &#8288;<div class="quote-grid">
@@ -39,4 +38,3 @@ expression: chapter.content
         </p>
     </blockquote>
 </div>
-'''

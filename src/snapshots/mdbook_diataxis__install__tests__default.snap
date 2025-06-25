@@ -2,9 +2,7 @@
 source: src/install.rs
 expression: book_toml_content
 ---
-'''
 [output.html]
 additional-css = ["theme/css/diataxis.css"]
 
 [preprocessor.diataxis]
-'''

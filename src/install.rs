@@ -157,7 +157,7 @@ mod tests {
         expect_that,
         matchers::{all, contains_substring, eq},
     };
-    use insta::assert_toml_snapshot;
+    use insta::assert_snapshot;
 
     use super::*;
 
@@ -184,7 +184,7 @@ mod tests {
                 contains_substring("theme/css/diataxis.css"),
             }
         );
-        assert_toml_snapshot!(book_toml_content);
+        assert_snapshot!(book_toml_content);
 
         let diataxis_css_content =
             fs::read_to_string(tempdir.path().join("theme/css").join("diataxis.css")).unwrap();
@@ -192,7 +192,7 @@ mod tests {
             diataxis_css_content,
             contains_substring(".diataxis-card-header")
         );
-        assert_toml_snapshot!(diataxis_css_content);
+        assert_snapshot!(diataxis_css_content);
 
         // Repeat installation has no additional effect.
         install(InstallCmd {

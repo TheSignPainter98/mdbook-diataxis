@@ -365,7 +365,7 @@ mod tests {
     use googletest::expect_that;
     use googletest::matchers::{all, contains_substring};
     use indoc::indoc;
-    use insta::assert_toml_snapshot;
+    use insta::assert_snapshot;
     use mdbook::preprocess::CmdPreprocessor;
 
     mod compass {
@@ -420,7 +420,7 @@ mod tests {
                     contains_substring("Explanation"),
                 )
             );
-            assert_toml_snapshot!(chapter.content);
+            assert_snapshot!(chapter.content);
         }
 
         #[googletest::test]
@@ -503,7 +503,7 @@ mod tests {
                     contains_substring(r#"href="custom-explanation-link.html""#),
                 )
             );
-            assert_toml_snapshot!(chapter.content);
+            assert_snapshot!(chapter.content);
         }
     }
 
@@ -576,7 +576,7 @@ mod tests {
                     contains_substring("- Draft sub-chapter"),
                 )
             );
-            assert_toml_snapshot!(chapter.content);
+            assert_snapshot!(chapter.content);
         }
     }
 }
