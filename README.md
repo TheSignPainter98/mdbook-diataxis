@@ -40,6 +40,7 @@ The text of each part of the compass can be [configured via `book.toml`](#config
 ### `{{#diataxis table-of-contents}}`
 
 Expands to a table of contents listing the top-level children of the current chapter.
+Example:
 
 ![Table of contents output example](img/toc-example.png)
 
