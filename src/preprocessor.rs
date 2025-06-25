@@ -123,10 +123,11 @@ impl<'cfg> Config<'cfg> {
             .unwrap_or("Hands-on lessons")
     }
 
-    fn tutorials_link(&self) -> &str {
+    fn tutorials_link(&self) -> &Path {
         self.tutorials
             .link_override
-            .unwrap_or("./tutorials/index.html")
+            .as_deref()
+            .unwrap_or(Path::new("./tutorials/index.html"))
     }
 
     fn how_to_guides_title(&self) -> &str {
@@ -139,10 +140,11 @@ impl<'cfg> Config<'cfg> {
             .unwrap_or("Step-by-step instructions for common tasks")
     }
 
-    fn how_to_guides_link(&self) -> &str {
+    fn how_to_guides_link(&self) -> &Path {
         self.how_to_guides
             .link_override
-            .unwrap_or("./how-to/index.html")
+            .as_deref()
+            .unwrap_or(Path::new("./how-to/index.html"))
     }
 
     fn explanation_title(&self) -> &str {
@@ -155,10 +157,11 @@ impl<'cfg> Config<'cfg> {
             .unwrap_or("Long-form discussion of key topics")
     }
 
-    fn explanation_link(&self) -> &str {
+    fn explanation_link(&self) -> &Path {
         self.explanation
             .link_override
-            .unwrap_or("./explanations/index.html")
+            .as_deref()
+            .unwrap_or(Path::new("./explanations/index.html"))
     }
 
     fn reference_title(&self) -> &str {
@@ -171,10 +174,11 @@ impl<'cfg> Config<'cfg> {
             .unwrap_or("Technical information")
     }
 
-    fn reference_link(&self) -> &str {
+    fn reference_link(&self) -> &Path {
         self.reference
             .link_override
-            .unwrap_or("./reference-materials/index.html")
+            .as_deref()
+            .unwrap_or(Path::new("./reference-materials/index.html"))
     }
 }
 
@@ -182,7 +186,7 @@ impl<'cfg> Config<'cfg> {
 struct SectionConfig<'cfg> {
     title_override: Option<&'cfg str>,
     description_override: Option<&'cfg str>,
-    link_override: Option<&'cfg str>,
+    link_override: Option<PathBuf>,
 }
 
 impl<'cfg> SectionConfig<'cfg> {
@@ -191,7 +195,11 @@ impl<'cfg> SectionConfig<'cfg> {
         let description_override = config_table
             .get("description")
             .and_then(|desc| desc.as_str());
-        let link_override = config_table.get("link").and_then(|file| file.as_str());
+        let link_override = config_table
+            .get("link")
+            .and_then(|file| file.as_str())
+            .map(Path::new)
+            .map(|path| path.with_extension("html"));
         Self {
             title_override,
             description_override,
@@ -234,16 +242,16 @@ impl Replacement {
 
         let tutorials_title = ctx.config.tutorials_title();
         let tutorials_description = ctx.config.tutorials_description();
-        let tutorials_link = ctx.config.tutorials_link();
+        let tutorials_link = ctx.config.tutorials_link().display();
         let how_to_guide_title = ctx.config.how_to_guides_title();
         let how_to_guide_description = ctx.config.how_to_guides_description();
-        let how_to_guides_link = ctx.config.how_to_guides_link();
+        let how_to_guides_link = ctx.config.how_to_guides_link().display();
         let reference_title = ctx.config.reference_title();
         let reference_description = ctx.config.reference_description();
-        let reference_link = ctx.config.reference_link();
+        let reference_link = ctx.config.reference_link().display();
         let explanation_title = ctx.config.explanation_title();
         let explanation_description = ctx.config.explanation_description();
-        let explanation_link = ctx.config.explanation_link();
+        let explanation_link = ctx.config.explanation_link().display();
         writedoc!(
             buf,
             // TODO(kcza): this &#8288; causes spacing issues but otherwise if tje
@@ -418,22 +426,22 @@ mod tests {
                                     "tutorials": {
                                         "title": "custom-tutorials-title",
                                         "description": "custom-tutorials-description",
-                                        "link": "custom-tutorials-link.html"
+                                        "link": "custom-tutorials-link.md"
                                     },
                                     "how-to-guides": {
                                         "title": "custom-how-to-guides-title",
                                         "description": "custom-how-to-guides-description",
-                                        "link": "custom-how-to-guides-link.html"
+                                        "link": "custom-how-to-guides-link.md"
                                     },
                                     "reference": {
                                         "title": "custom-reference-title",
                                         "description": "custom-reference-description",
-                                        "link": "custom-reference-link.html"
+                                        "link": "custom-reference-link.md"
                                     },
                                     "explanation": {
                                         "title": "custom-explanation-title",
                                         "description": "custom-explanation-description",
-                                        "link": "custom-explanation-link.html"
+                                        "link": "custom-explanation-link.md"
                                     }
                                 }
                             }
