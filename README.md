@@ -52,18 +52,22 @@ This snippet is for demonstration purposes; all fields are optional.
 [preprocessor.diataxis.compass.tutorials]
 title = "new Tutorials title"
 description = "new Tutorials description"
+link = "path/to/tutorials.html"
 
 [preprocessor.diataxis.compass.how-to-guides]
 title = "new How-to guides title"
 description = "new How-to guides description"
+link = "path/to/how-to-guides.html"
 
 [preprocessor.diataxis.compass.explanation]
 title = "new Explanation title"
 description = "new Explanation description"
+link = "path/to/explanation.html"
 
 [preprocessor.diataxis.compass.reference]
 title = "new Reference title"
 description = "new Reference description"
+link = "path/to/reference.html"
 ```
 
 ## License
