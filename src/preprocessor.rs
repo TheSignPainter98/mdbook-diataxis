@@ -199,7 +199,19 @@ impl<'cfg> SectionConfig<'cfg> {
             .get("link")
             .and_then(|file| file.as_str())
             .map(Path::new)
-            .map(|path| path.with_extension("html"));
+            .map(|path| {
+                if path
+                    .file_name()
+                    .is_some_and(|file_name| file_name == "README.md")
+                {
+                    return path.with_file_name("index.html");
+                }
+                path.to_owned()
+            })
+            .map(|mut path| {
+                path.set_extension("html");
+                path
+            });
         Self {
             title_override,
             description_override,
@@ -426,7 +438,7 @@ mod tests {
                                     "tutorials": {
                                         "title": "custom-tutorials-title",
                                         "description": "custom-tutorials-description",
-                                        "link": "custom-tutorials-link.md"
+                                        "link": "custom-tutorials/README.md"
                                     },
                                     "how-to-guides": {
                                         "title": "custom-how-to-guides-title",
@@ -475,7 +487,7 @@ mod tests {
                 all!(
                     contains_substring("custom-tutorials-title"),
                     contains_substring("custom-tutorials-description"),
-                    contains_substring(r#"href="custom-tutorials-link.html""#),
+                    contains_substring(r#"href="custom-tutorials/index.html""#),
                     contains_substring("custom-how-to-guides-title"),
                     contains_substring("custom-how-to-guides-description"),
                     contains_substring(r#"href="custom-how-to-guides-link.html""#),

@@ -9,7 +9,7 @@ expression: chapter.content
     <blockquote>
         <p>
             <div class="diataxis-card-header">
-                <a href="custom-tutorials-link.html">custom-tutorials-title</a>
+                <a href="custom-tutorials/index.html">custom-tutorials-title</a>
             </div>
             custom-tutorials-description
         </p>
