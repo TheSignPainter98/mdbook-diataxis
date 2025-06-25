@@ -30,7 +30,7 @@ The diátaxis directives are now available for use!
 
 ### `{{#diataxis compass}}`
 
-Expands to an `html` representation of of the diátaxis compass.
+Expands to an `html` representation of the diátaxis compass.
 Example:
 
 ![Diátaxis compass output example](img/compass-example.png)
