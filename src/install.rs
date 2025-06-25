@@ -111,9 +111,12 @@ fn implicit_table() -> Item {
 }
 
 fn write_css(cmd: &InstallConfig) -> Result<()> {
-    let InstallConfig { css_path, .. } = cmd;
-    write_file(
+    let InstallConfig {
+        book_root_dir,
         css_path,
+    } = cmd;
+    write_file(
+        book_root_dir.join(css_path),
         indoc! {"
             .diataxis-card-header {
                 font-weight: bold;
@@ -146,4 +149,65 @@ pub(crate) fn write_file(path: impl AsRef<Path>, content: impl AsRef<str>) -> Re
     fs::write(path, content.as_ref())
         .with_context(|| anyhow!("cannot write to {}", path.display()))?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use googletest::{
+        expect_that,
+        matchers::{all, contains_substring, eq},
+    };
+    use insta::assert_toml_snapshot;
+
+    use super::*;
+
+    #[googletest::test]
+    fn default() {
+        let tempdir = tempfile::tempdir().unwrap();
+
+        let book_toml_path = tempdir.path().join("book.toml");
+        write_file(&book_toml_path, "").unwrap();
+
+        install(InstallCmd {
+            book_root_dir: tempdir.path().to_owned(),
+            css_dir: PathBuf::from("theme/css"),
+        })
+        .unwrap();
+
+        let book_toml_content = fs::read_to_string(&book_toml_path).unwrap();
+        expect_that!(
+            book_toml_content,
+            all! {
+                contains_substring("[preprocessor.diataxis]"),
+                contains_substring("[output.html]"),
+                contains_substring("additional-css = ["),
+                contains_substring("theme/css/diataxis.css"),
+            }
+        );
+        assert_toml_snapshot!(book_toml_content);
+
+        let diataxis_css_content =
+            fs::read_to_string(tempdir.path().join("theme/css").join("diataxis.css")).unwrap();
+        expect_that!(
+            diataxis_css_content,
+            contains_substring(".diataxis-card-header")
+        );
+        assert_toml_snapshot!(diataxis_css_content);
+
+        // Repeat installation has no additional effect.
+        install(InstallCmd {
+            book_root_dir: tempdir.path().to_owned(),
+            css_dir: PathBuf::from("theme/css"),
+        })
+        .unwrap();
+        let book_toml_content = fs::read_to_string(&book_toml_path).unwrap();
+        expect_that!(
+            book_toml_content.matches("[preprocessor.diataxis]").count(),
+            eq(1)
+        );
+        expect_that!(
+            book_toml_content.matches("theme/css/diataxis.css").count(),
+            eq(1)
+        );
+    }
 }
