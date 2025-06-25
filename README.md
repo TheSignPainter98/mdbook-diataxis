@@ -71,9 +71,12 @@ description = "new Reference description"
 link = "path/to/reference.html"
 ```
 
-## License
+## License and Author.
 
 This project is [licensed under GPLv3](LICENSE).
+
+This project was originally written by Ed Jones.
+Thank you [jf908](https://github.com/jf908), for making the grid CSS.
 
 [diataxis]: https://diataxis.fr
 [mdbook]: https://github.com/rust-lang/mdBook
