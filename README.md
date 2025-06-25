@@ -14,19 +14,19 @@ This will build `mdbook-diataxis` from source.
 
 ## Integrating `mdbook-diataxis`
 
-Add the following line to your `book.toml`:
+Type and run the following command with the path to your book.
 
-```toml
-[preprocessor.diataxis]
+```bash
+mdbook-diataxis install path/to/book
 ```
 
-And now `mdbook-diataxis` is ready for use!
+You will see that a new `[preprocessor.diataxis]` table has been added to your `book.toml`, the `[output.html]` table has been amended to include the newly-written `diataxis.css` file.
 
-<!-- TODO(kcza): add `cargo-binstall` installation option. -->
+The diátaxis directives are now available for use!
 
 ## Usage
 
-This preprocessor defines the following directives.
+`mdbook-diataxis` defines the following directives.
 
 ### `{{#diataxis compass}}`
 
