@@ -12,7 +12,7 @@ use crate::args::InstallCmd;
 pub(crate) fn install(cmd: InstallCmd) -> Result<()> {
     let config = InstallConfig::from(cmd);
     edit_book_toml(&config).context("cannot edit book.toml")?;
-    create_css_files(&config).context("cannot install css")?;
+    write_css(&config).context("cannot install css")?;
     Ok(())
 }
 
@@ -110,9 +110,9 @@ fn implicit_table() -> Item {
     Item::Table(table)
 }
 
-fn create_css_files(cmd: &InstallConfig) -> Result<()> {
+fn write_css(cmd: &InstallConfig) -> Result<()> {
     let InstallConfig { css_path, .. } = cmd;
-    create_file(
+    write_file(
         css_path,
         indoc! {"
             .diataxis-card-header {
@@ -136,7 +136,7 @@ fn create_css_files(cmd: &InstallConfig) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn create_file(path: impl AsRef<Path>, content: impl AsRef<str>) -> Result<()> {
+pub(crate) fn write_file(path: impl AsRef<Path>, content: impl AsRef<str>) -> Result<()> {
     let path = path.as_ref();
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)
