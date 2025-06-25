@@ -2,9 +2,7 @@ use std::iter;
 use std::path::{Component, Path, PathBuf};
 use std::sync::LazyLock;
 
-// TODO(kcza): error handling, e.g. on {{#diataxis unrecognised}}
-
-use aho_corasick::AhoCorasick;
+use aho_corasick::{AhoCorasick, MatchKind};
 use indoc::writedoc;
 use mdbook::book::{Book, Chapter};
 use mdbook::errors::Result;
@@ -42,14 +40,28 @@ impl DiataxisPreprocessor {
     }
 
     fn preprocess_text(&self, text: &str, config: &Config, chapter: &Chapter) -> String {
-        static MATCHER: LazyLock<AhoCorasick> =
-            LazyLock::new(|| AhoCorasick::new(Replacement::patterns()).unwrap());
+        static MATCHER: LazyLock<AhoCorasick> = LazyLock::new(|| {
+            AhoCorasick::builder()
+                .match_kind(MatchKind::LeftmostLongest)
+                .build(Replacement::patterns())
+                .unwrap()
+        });
 
         let replacement_ctx = ReplacementCtx { config, chapter };
         let mut ret = String::with_capacity(text.len());
         MATCHER.replace_all_with(text, &mut ret, |result, _, ret| {
-            let replacement = Replacement::from_index(result.pattern().as_usize());
+            let replacement = Replacement::from_pattern_index(result.pattern().as_usize());
             replacement.write_to(ret, &replacement_ctx);
+            if replacement.is_malformed() {
+                eprintln!(
+                    "Warning: malformed `{{{{#diataxis ...}}}}` expression in {}",
+                    chapter
+                        .source_path
+                        .as_deref()
+                        .expect("internal error: draft chapter has content")
+                        .display(),
+                )
+            }
             true
         });
         ret
@@ -224,28 +236,39 @@ impl<'cfg> SectionConfig<'cfg> {
 enum Replacement {
     Compass,
     Toc,
+    Malformed,
 }
 
 impl Replacement {
-    const fn patterns() -> [&'static str; 2] {
-        [Self::Compass.pattern(), Self::Toc.pattern()]
+    const fn patterns() -> [&'static str; 3] {
+        [
+            Self::Compass.pattern(),
+            Self::Toc.pattern(),
+            Self::Malformed.pattern(),
+        ]
     }
 
     const fn pattern(&self) -> &'static str {
         match self {
             Self::Compass => "{{#diataxis compass}}",
             Self::Toc => "{{#diataxis table-of-contents}}",
+            Self::Malformed => "{{#diataxis",
         }
     }
 
-    fn from_index(index: usize) -> Self {
-        [Self::Compass, Self::Toc][index]
+    fn from_pattern_index(index: usize) -> Self {
+        [Self::Compass, Self::Toc, Self::Malformed][index]
+    }
+
+    fn is_malformed(&self) -> bool {
+        matches!(self, Self::Malformed)
     }
 
     fn write_to(&self, buf: &mut String, ctx: &ReplacementCtx) {
         match self {
             Self::Compass => self.write_compass_to(buf, ctx),
             Self::Toc => self.write_toc_to(buf, ctx),
+            Self::Malformed => buf.push_str(self.pattern()),
         };
     }
 
