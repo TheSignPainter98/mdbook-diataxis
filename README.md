@@ -66,5 +66,9 @@ title = "new Reference title"
 description = "new Reference description"
 ```
 
+## License
+
+This project is [licensed under GPLv3](LICENSE).
+
 [diataxis]: https://diataxis.fr
 [mdbook]: https://github.com/rust-lang/mdBook
