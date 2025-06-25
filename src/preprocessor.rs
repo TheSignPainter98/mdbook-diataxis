@@ -338,6 +338,10 @@ impl Replacement {
     }
 }
 
+/// Computes the path of `target` relative to `source`.
+///
+/// `target` must be a sibling of `source` or be in a child directory which is a sibling of
+/// `source`. Symlinks are not supported.
 fn relative_to(source: &Path, target: &Path) -> PathBuf {
     target
         .components()
