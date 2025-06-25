@@ -19,3 +19,4 @@ toml_edit = "0.22.27"
 [dev-dependencies]
 googletest = "0.14.1"
 insta = { version = "1.43.1", features = ["toml"] }
+tempfile = "3.20.0"

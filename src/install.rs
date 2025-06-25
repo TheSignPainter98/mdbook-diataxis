@@ -9,7 +9,6 @@ use toml_edit::{Array, DocumentMut, Item, Table};
 
 use crate::args::InstallCmd;
 
-// TODO(kcza): anyhow this.
 pub(crate) fn install(cmd: InstallCmd) -> Result<()> {
     let config = InstallConfig::from(cmd);
     edit_book_toml(&config).context("cannot edit book.toml")?;
@@ -98,7 +97,6 @@ fn edit_book_toml(config: &InstallConfig) -> Result<()> {
     }
 
     if changed {
-        eprintln!("changed");
         fs::write(&book_path, book_toml.to_string())
             .with_context(|| anyhow!("Cannot write {}", book_path.display()))?;
     }
