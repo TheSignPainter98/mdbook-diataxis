@@ -37,6 +37,10 @@ impl DiataxisPreprocessor {
         pulldown_cmark_to_cmark::cmark(parser, &mut new_content)?;
         chapter.content = new_content;
 
+        for sub_item in &mut chapter.sub_items {
+            self.preprocess_bookitem(sub_item, config)?;
+        }
+
         Ok(())
     }
 
