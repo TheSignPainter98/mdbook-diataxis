@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use indoc::indoc;
 use toml_edit::{Array, DocumentMut, Item, Table};
 
