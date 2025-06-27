@@ -6,3 +6,4 @@ expression: chapter.content
 
 - [Non-draft sub-chapter](dir/non_draft_sub.md)
 - Draft sub-chapter
+- [README sub-chapter](sub_chapter/index.html)

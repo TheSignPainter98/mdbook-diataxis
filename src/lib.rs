@@ -379,18 +379,32 @@ impl Replacement {
                 BookItem::Chapter(chapter) => Some(chapter),
                 _ => None,
             })
-            .for_each(|child| {
-                use std::fmt::Write;
-                let name = &child.name;
+            .map(|child| {
                 let link_path = child
                     .source_path
                     .as_deref()
                     .map(|path| relative_to(chapter_path, path));
+                (&child.name, link_path)
+            })
+            .map(|(child_name, mut link_path)| {
+                if let Some(link_path) = &mut link_path {
+                    if link_path
+                        .file_name()
+                        .is_some_and(|file_name| file_name == "README.md")
+                    {
+                        link_path.set_file_name("index.html")
+                    }
+                }
+                (child_name, link_path)
+            })
+            .for_each(|(child_name, link_path)| {
+                use std::fmt::Write;
                 if let Some(link_path) = link_path {
-                    writeln!(buf, "- [{name}]({})", link_path.display())
+                    writeln!(buf, "- [{child_name}]({})", link_path.display())
                         .expect("internal error: cannot to write to string")
                 } else {
-                    writeln!(buf, "- {name}").expect("internal error: cannot to write to string")
+                    writeln!(buf, "- {child_name}")
+                        .expect("internal error: cannot to write to string")
                 }
             });
     }
@@ -610,6 +624,16 @@ mod tests {
                                     "number": [1, 1],
                                     "sub_items": [],
                                     "path": "chapter_1/dir/draft_sub.md",
+                                    "parent_names": []
+                                }
+                            }, {
+                                "Chapter": {
+                                    "name": "README sub-chapter",
+                                    "content": "README sub content",
+                                    "number": [1, 1],
+                                    "sub_items": [],
+                                    "path": "chapter_1/sub_chapter/README.md",
+                                    "source_path": "chapter_1/sub_chapter/README.md",
                                     "parent_names": []
                                 }
                             }],
