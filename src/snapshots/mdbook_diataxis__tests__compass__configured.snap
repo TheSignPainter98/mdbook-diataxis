@@ -3,37 +3,39 @@ source: src/lib.rs
 expression: chapter.content
 ---
 # Chapter 1
-<div class="quote-grid">
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="custom-tutorials/index.html">custom-tutorials-title</a>
-            </div>
-            custom-tutorials-description
-        </p>
-    </blockquote>
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="custom-how-to-guides-link.html">custom-how-to-guides-title</a>
-            </div>
-            custom-how-to-guides-description
-        </p>
-    </blockquote>
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="custom-explanation-link.html">custom-explanation-title</a>
-            </div>
-            custom-explanation-description
-        </p>
-    </blockquote>
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="custom-reference-link.html">custom-reference-title</a>
-            </div>
-            custom-reference-description
-        </p>
-    </blockquote>
-</div>
+<span>
+    <div class="quote-grid">
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="custom-tutorials/index.html">custom-tutorials-title</a>
+                </div>
+                custom-tutorials-description
+            </p>
+        </blockquote>
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="custom-how-to-guides-link.html">custom-how-to-guides-title</a>
+                </div>
+                custom-how-to-guides-description
+            </p>
+        </blockquote>
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="custom-explanation-link.html">custom-explanation-title</a>
+                </div>
+                custom-explanation-description
+            </p>
+        </blockquote>
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="custom-reference-link.html">custom-reference-title</a>
+                </div>
+                custom-reference-description
+            </p>
+        </blockquote>
+    </div>
+</span>

@@ -316,40 +316,42 @@ impl Replacement {
         writedoc!(
             buf,
             r#"
-                <div class="quote-grid">
-                    <blockquote>
-                        <p>
-                            <div class="diataxis-card-header">
-                                <a href="{tutorials_link}">{tutorials_title}</a>
-                            </div>
-                            {tutorials_description}
-                        </p>
-                    </blockquote>
-                    <blockquote>
-                        <p>
-                            <div class="diataxis-card-header">
-                                <a href="{how_to_guides_link}">{how_to_guide_title}</a>
-                            </div>
-                            {how_to_guide_description}
-                        </p>
-                    </blockquote>
-                    <blockquote>
-                        <p>
-                            <div class="diataxis-card-header">
-                                <a href="{explanation_link}">{explanation_title}</a>
-                            </div>
-                            {explanation_description}
-                        </p>
-                    </blockquote>
-                    <blockquote>
-                        <p>
-                            <div class="diataxis-card-header">
-                                <a href="{reference_link}">{reference_title}</a>
-                            </div>
-                            {reference_description}
-                        </p>
-                    </blockquote>
-                </div>
+                <span>
+                    <div class="quote-grid">
+                        <blockquote>
+                            <p>
+                                <div class="diataxis-card-header">
+                                    <a href="{tutorials_link}">{tutorials_title}</a>
+                                </div>
+                                {tutorials_description}
+                            </p>
+                        </blockquote>
+                        <blockquote>
+                            <p>
+                                <div class="diataxis-card-header">
+                                    <a href="{how_to_guides_link}">{how_to_guide_title}</a>
+                                </div>
+                                {how_to_guide_description}
+                            </p>
+                        </blockquote>
+                        <blockquote>
+                            <p>
+                                <div class="diataxis-card-header">
+                                    <a href="{explanation_link}">{explanation_title}</a>
+                                </div>
+                                {explanation_description}
+                            </p>
+                        </blockquote>
+                        <blockquote>
+                            <p>
+                                <div class="diataxis-card-header">
+                                    <a href="{reference_link}">{reference_title}</a>
+                                </div>
+                                {reference_description}
+                            </p>
+                        </blockquote>
+                    </div>
+                </span>
             "#,
         )
         .expect("internal error: cannot to write to string");

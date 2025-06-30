@@ -3,37 +3,39 @@ source: src/lib.rs
 expression: chapter.content
 ---
 # Chapter 1
-<div class="quote-grid">
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="./tutorials/index.html">Tutorials</a>
-            </div>
-            Hands-on lessons
-        </p>
-    </blockquote>
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="./how-to/index.html">How-to guides</a>
-            </div>
-            Step-by-step instructions for common tasks
-        </p>
-    </blockquote>
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="./explanations/index.html">Explanation</a>
-            </div>
-            Long-form discussion of key topics
-        </p>
-    </blockquote>
-    <blockquote>
-        <p>
-            <div class="diataxis-card-header">
-                <a href="./reference-materials/index.html">Reference</a>
-            </div>
-            Technical information
-        </p>
-    </blockquote>
-</div>
+<span>
+    <div class="quote-grid">
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="./tutorials/index.html">Tutorials</a>
+                </div>
+                Hands-on lessons
+            </p>
+        </blockquote>
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="./how-to/index.html">How-to guides</a>
+                </div>
+                Step-by-step instructions for common tasks
+            </p>
+        </blockquote>
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="./explanations/index.html">Explanation</a>
+                </div>
+                Long-form discussion of key topics
+            </p>
+        </blockquote>
+        <blockquote>
+            <p>
+                <div class="diataxis-card-header">
+                    <a href="./reference-materials/index.html">Reference</a>
+                </div>
+                Technical information
+            </p>
+        </blockquote>
+    </div>
+</span>
