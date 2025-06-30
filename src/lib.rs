@@ -83,10 +83,9 @@ impl Preprocessor for DiataxisPreprocessor {
     }
 
     fn run(&self, ctx: &PreprocessorContext, mut book: Book) -> MdbookResult<Book> {
-        const CONFIG_KEY: &str = "diataxis";
         let config = ctx
             .config
-            .get_preprocessor(CONFIG_KEY)
+            .get_preprocessor("diataxis")
             .map(Config::new)
             .transpose()?
             .unwrap_or_default();

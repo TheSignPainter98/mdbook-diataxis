@@ -16,6 +16,7 @@ use clap::{ArgAction, Parser, Subcommand};
 pub(crate) struct Args {
     #[command(subcommand)]
     pub(crate) command: Option<Command>,
+
     /// Print help information, use `--help` for more detail
     #[arg(short, long, action=ArgAction::Help, global=true)]
     help: Option<bool>,
