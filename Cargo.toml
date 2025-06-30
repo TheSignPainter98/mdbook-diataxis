@@ -9,8 +9,6 @@ anyhow = { version = "1.0.98", default-features = false }
 clap = { version = "4.5.40", features = ["color", "derive", "wrap_help"] }
 indoc = { version = "2.0.6", default-features = false }
 mdbook = { version = "0.4.51", default-features = false }
-pulldown-cmark = { version = "0.13.0", default-features = false }
-pulldown-cmark-to-cmark = { version = "21.0.0", default-features = false }
 semver = { version = "1.0.26", features = ["std"], default-features = false }
 serde_json = { version = "1.0.140", default-features = false }
 toml = { version = "0.5.11", default-features = false }

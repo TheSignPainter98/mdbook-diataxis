@@ -3,13 +3,12 @@ use std::path::{Component, Path, PathBuf};
 use std::sync::LazyLock;
 
 use aho_corasick::{AhoCorasick, MatchKind};
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use indoc::writedoc;
-use mdbook::BookItem;
 use mdbook::book::{Book, Chapter};
 use mdbook::errors::Result as MdbookResult;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
-use pulldown_cmark::{Event, Parser};
+use mdbook::BookItem;
 use toml::value::Table;
 
 #[derive(Default)]
@@ -28,14 +27,7 @@ impl DiataxisPreprocessor {
     }
 
     fn preprocess_chapter(&self, chapter: &mut Chapter, config: &Config) -> Result<()> {
-        let parser = Parser::new(&chapter.content).map(|event| match event {
-            Event::Text(text) => Event::Text(self.preprocess_text(&text, config, &*chapter).into()),
-            _ => event,
-        });
-        let new_content_capacity = (chapter.content.len() as f64 * 1.05) as usize;
-        let mut new_content = String::with_capacity(new_content_capacity);
-        pulldown_cmark_to_cmark::cmark(parser, &mut new_content)?;
-        chapter.content = new_content;
+        chapter.content = self.preprocess_content(&chapter.content, config, chapter);
 
         for sub_item in &mut chapter.sub_items {
             self.preprocess_bookitem(sub_item, config)?;
@@ -44,7 +36,7 @@ impl DiataxisPreprocessor {
         Ok(())
     }
 
-    fn preprocess_text(&self, text: &str, config: &Config, chapter: &Chapter) -> String {
+    fn preprocess_content(&self, text: &str, config: &Config, chapter: &Chapter) -> String {
         static MATCHER: LazyLock<AhoCorasick> = LazyLock::new(|| {
             AhoCorasick::builder()
                 .match_kind(MatchKind::LeftmostLongest)
@@ -323,11 +315,8 @@ impl Replacement {
         let explanation_link = ctx.config.explanation_link().display();
         writedoc!(
             buf,
-            // TODO(kcza): this &#8288; causes spacing issues but otherwise if tje
-            // snippet starts with a `<`, it gets escaped, ruining the outermost html
-            // tags.
             r#"
-                &#8288;<div class="quote-grid">
+                <div class="quote-grid">
                     <blockquote>
                         <p>
                             <div class="diataxis-card-header">

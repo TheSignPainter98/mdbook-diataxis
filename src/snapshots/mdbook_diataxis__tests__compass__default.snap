@@ -3,8 +3,7 @@ source: src/lib.rs
 expression: chapter.content
 ---
 # Chapter 1
-
-&#8288;<div class="quote-grid">
+<div class="quote-grid">
     <blockquote>
         <p>
             <div class="diataxis-card-header">
