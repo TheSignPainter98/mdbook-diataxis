@@ -1,6 +1,6 @@
 # mdbook-diataxis
 
-A preprocessor for [mdBook][mdbook] which helps apply the [diátaxis][diataxis] documentation framework.
+A preprocessor for [mdBook][mdbook] which helps apply the [Diátaxis][diataxis] documentation framework.
 
 ## Installation
 
@@ -22,7 +22,7 @@ mdbook-diataxis install path/to/book
 
 You will see that a new `[preprocessor.diataxis]` table has been added to your `book.toml`, the `[output.html]` table has been amended to include the newly-written `diataxis.css` file.
 
-The diátaxis directives are now available for use!
+The Diátaxis directives are now available for use!
 
 ## Usage
 
