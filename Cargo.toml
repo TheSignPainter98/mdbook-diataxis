@@ -2,7 +2,7 @@
 name = "mdbook-diataxis"
 version = "0.1.0"
 edition = "2024"
-license-file = "LICENSE"
+license = "GPL-3.0"
 description = "A preprocessor for mdBook which helps apply the Diátaxis documentation framework"
 repository = "https://github.com/TheSignPainter98/mdbook-diataxis"
 readme = "README.md"
