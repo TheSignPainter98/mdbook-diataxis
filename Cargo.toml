@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-diataxis"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "GPL-3.0"
 description = "A preprocessor for mdBook which helps apply the Diátaxis documentation framework"
